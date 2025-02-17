@@ -123,6 +123,17 @@ values
 select*from student;
 
 ---task-5----
+create table worker(
+	id int,
+	name nvarchar(255)
+)
 
-
-
+bulk insert worker
+from 'C:\Users\user\Documents\Farzona\MAAB\BI and AI SQL\SQL_homeworks\lesson-2\homework\workers.csv'
+with(
+	format='csv',
+	firstrow=2,
+	fieldterminator=',',
+	rowterminator='\n'
+);
+select*from worker;
