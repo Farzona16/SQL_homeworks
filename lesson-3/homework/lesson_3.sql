@@ -138,7 +138,17 @@ values
 	  ('Screen','Electronics', 100 ,20 )
 select*from Products;
 
+select distinct category from Products;
 
-select category, max(Price) as most_expensive 
+select p1.productName, p1.Category, p1.Price 
+from Products p1
+where p1.Price=(
+	select Max(p2.Price)
+	from products p2
+	where p2.Category=p1.Category
+);
+
+select *,IIF(Stock=0,'Out of stock', IIF(Stock between 1 and 10, 'low stock','in stock'))
 from Products
-group by category;
+Order by Price desc
+Offset 5 rows;
