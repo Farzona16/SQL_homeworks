@@ -94,9 +94,42 @@ where od.price=(
 );
 
 ---task-6
+select  c.customername,
+	max(o.orderdate)
+from customers as c
+join orders as o
+	on c.customerid=o.customerid
+group by c.customerid,c.customername
 
+---task-7
+select c.customername
+from customers as c
+join orders as o
+	on c.customerid=o.customerid
+join orderdetails od
+	on od.orderid=o.orderid
+join products p
+	on p.productid=od.productid	
+group by c.customerid, c.customername
+having sum(case when p.category='electronics' then 1 else 0 end)=count(*);
 
-select *from customers;
-select*from orders;
-select*from orderdetails;
-select*from products;
+---task-8
+select c.customername
+from customers as c
+join orders as o
+	on o.customerid=c.customerid
+join orderdetails as od
+	on od.orderid=o.orderid
+join products as p
+	on p.productid=od.productid
+where p.category='stationery'
+
+--task-9
+select distinct c.customerid, c.customername,
+		sum(od.price*od.quantity) over(partition by c.customerid) as total_spent
+from customers c
+left join orders o
+	on o.customerid=c.customerid
+left join orderdetails od
+	on od.orderid=o.orderid
+
