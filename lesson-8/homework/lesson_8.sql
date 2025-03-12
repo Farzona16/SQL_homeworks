@@ -62,79 +62,41 @@ VALUES
 	select*from [dbo].[EMPLOYEES_N]
 
 ----task-1
+select*from groupings
+;with cte as(	
+	select 
+		stepnumber,
+		status, 
+		row_number() over(order by stepnumber ) as unique_num,
+		row_number()  over(partition by status order by stepnumber) as unique_stat
+	from  groupings
+)
+select 
+	min(stepnumber) as min_stepnumber, 
+	max(stepnumber) as max_stepnumber,
+	status,
+	count(*) as count
+from (
+	select stepnumber, status, (unique_num-unique_stat) as grp
+	from cte
+) as sub
+Group by status, grp
 
-SELECT status, COUNT(*) AS consecutive_count
-FROM (
-    SELECT status, stepnumber,
-        SUM(CASE WHEN status <> LAG(status) OVER (ORDER BY stepnumber) THEN 1 ELSE 0 END)
-        OVER (ORDER BY stepnumber ROWS UNBOUNDED PRECEDING) AS grp
-    FROM Groupings
-) AS sub
-GROUP BY status, grp
-ORDER BY MIN(stepnumber);
-
-
-
-
-
------lesson_10
-drop table if exists orders
-CREATE TABLE Orders (
-    OrderID INT PRIMARY KEY,
-    CustomerName VARCHAR(100),
-    OrderDate DATE
-);
-CREATE TABLE OrderDetails (
-    OrderDetailID INT PRIMARY KEY,
-    OrderID INT,
-    ProductName VARCHAR(100),
-    Quantity INT,
-    UnitPrice DECIMAL(10,2),
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID)
-);
-INSERT INTO Orders VALUES 
-    (1, 'Alice', '2024-03-01'),
-    (2, 'Bob', '2024-03-02'),
-    (3, 'Charlie', '2024-03-03');
-INSERT INTO OrderDetails VALUES 
-    (1, 1, 'Laptop', 1, 1000.00),
-    (2, 1, 'Mouse', 2, 50.00),
-    (3, 2, 'Phone', 1, 700.00),
-    (4, 2, 'Charger', 1, 30.00),
-    (5, 3, 'Tablet', 1, 400.00),
-    (6, 3, 'Keyboard', 1, 80.00)
-	
-	select*from orders;
-	select*from orderdetails
-
-
-select customername,
-	productname,
-	quantity,
-	unitprice
-from(
-	select o.orderid,
-		o.customername,
-		od.productname,
-		od.quantity,
-		od.unitprice,
-		row_number() over(partition by o.customername order by od.unitprice) as rnk
-	from orders o
-	join orderdetails od
-		on od.orderid=o.orderid) as t1
-where rnk=1
-
-
-CREATE TABLE TestMax
-(
-    Year1 INT
-    ,Max1 INT
-    ,Max2 INT
-    ,Max3 INT
-);
-INSERT INTO TestMax 
-VALUES
-    (2001,10,101,87)
-    ,(2002,103,19,88)
-    ,(2003,21,23,89)
-    ,(2004,27,28,91);
+---task-2
+;with cte as(
+	select 1975 as missing_year
+	union all
+	select missing_year+1
+	from cte
+	where missing_year+1<=year(getdate())
+),
+hiredyears as(
+	select distinct year(hire_date) as hire_year 
+	from [dbo].[employees_n]
+)
+select y.missing_year  as no_hired_year
+from cte y
+left join hiredyears h
+	on h.hire_year=y.missing_year
+where h.hire_year is null
+order by no_hired_year
